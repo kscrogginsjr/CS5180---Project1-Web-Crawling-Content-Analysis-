@@ -38,7 +38,8 @@ gradle-app.setting
 ## IntelliJ
 ##############################
 out/
-.idea/
+web-crawler/.idea/
+.idea
 .idea_modules/
 *.iml
 *.ipr
@@ -82,3 +83,5 @@ nb-configuration.xml
 ## OS X
 ##############################
 .DS_Store
+
+
