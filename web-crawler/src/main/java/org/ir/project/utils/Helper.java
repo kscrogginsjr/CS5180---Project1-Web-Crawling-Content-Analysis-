@@ -4,12 +4,14 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import com.squareup.okhttp.Response;
 import org.ir.project.Crawler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.concurrent.TimeUnit;
 
 public class Helper {
 
@@ -79,14 +81,15 @@ public class Helper {
         return true;
     }
 
-    public String getWebPageLanguage(String webPageTitle) throws IOException {
+    public String getWebPageLanguage(String webPageTitle) throws IOException, InterruptedException {
         String language = null;
         String url = LANGUAGE_DETECTOR+"?access_key="+ ACCESS_KEY +"&query="+webPageTitle;
-        System.out.println("url : "+url);
-
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url(url).method("GET", null).build();
-        com.squareup.okhttp.Response response = client.newCall(request).execute();
+        int retry = 2;
+        com.squareup.okhttp.Response response;
+        do{
+            response = getResponseFromLanguaDetectore(url);
+            retry--;
+        }while (retry > 0 && !response.isSuccessful());
 
         if(response.isSuccessful()){
             String responseBody = response.body().string();
@@ -97,11 +100,35 @@ public class Helper {
                         LanguageDetector.class);
                 if(languageDetectorObj.success){
                     language = languageDetectorObj.results.get(0).language_name;
+                }else if(languageDetectorObj.error != null){
+                    System.err.println("Issue with the Language detector API");
+                    if(languageDetectorObj.error.code == 106) {
+                        Thread.sleep(60000);
+                        System.out.println("Wait for a minute, you have reached max rate 'hit/min' limit ..... ");
+                        getWebPageLanguage(webPageTitle);
+                    }
                 }
             } catch (JsonProcessingException e) {
                 System.out.println("Failed to parse Language detector response Body");
             }
+        }else{
+            System.err.println("Failed to get the Language detector \n response : " + response.body().string() +" \n status code : "+ response.code());
         }
         return language;
     }
+
+
+    public Response getResponseFromLanguaDetectore(String url) throws IOException {
+        OkHttpClient client = new OkHttpClient();
+        client.setConnectTimeout(10, TimeUnit.SECONDS);
+        client.setReadTimeout(10, TimeUnit.SECONDS);
+        client.setWriteTimeout(10, TimeUnit.SECONDS);
+
+        com.squareup.okhttp.Response response;
+        System.out.println("URL  : "+url);
+        Request request = new Request.Builder().url(url).method("GET", null).build();
+        response = client.newCall(request).execute();
+        return response;
+    }
+
 }

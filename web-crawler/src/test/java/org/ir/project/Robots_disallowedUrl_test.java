@@ -5,10 +5,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.util.HashSet;
-import java.util.Properties;
 
 public class Robots_disallowedUrl_test {
 
