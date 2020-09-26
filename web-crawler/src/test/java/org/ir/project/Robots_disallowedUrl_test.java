@@ -15,19 +15,6 @@ public class Robots_disallowedUrl_test {
     Helper helper = new Helper();
 
     HashSet<String> disAllowedPathPattern;
-    public static Properties properties;
-    static {
-        properties = new Properties();
-        try (InputStream input = Robots_disallowedUrl_test.class.getClassLoader().getResourceAsStream("Application.properties")) {
-            if (input == null) {
-                System.out.println("Sorry, unable to find Application.properties");
-            }
-            properties.load(input);
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-    }
-
 
     @Test
     public void allowBasewebsite() throws IOException {
@@ -71,7 +58,7 @@ public class Robots_disallowedUrl_test {
 
     public void getDisAllowedPaths() throws IOException {
         if(disAllowedPathPattern == null){
-            URL url = new URL(properties.getProperty("webCrawler.SEED_WEBSITE"));
+            URL url = new URL(Crawler.properties.getProperty("webCrawler.SEED_WEBSITE"));
             disAllowedPathPattern = helper.getDisalowedPaths_From_robotosFile(url.getProtocol()+"://"+url.getHost());
         }
     }

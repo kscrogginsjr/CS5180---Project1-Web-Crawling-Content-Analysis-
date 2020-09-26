@@ -1,7 +1,10 @@
 package org.ir.project.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
+import org.ir.project.Crawler;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +12,9 @@ import java.io.InputStreamReader;
 import java.util.HashSet;
 
 public class Helper {
+
+    private static final String ACCESS_KEY = Crawler.properties.getProperty("language.detector.access_key");
+    private static final String LANGUAGE_DETECTOR = Crawler.properties.getProperty("language.detector.api");
 
     //read Robots file.
     public HashSet<String> getDisalowedPaths_From_robotosFile(String hostUrl) throws IOException {
@@ -71,5 +77,31 @@ public class Helper {
                 return false;
         }
         return true;
+    }
+
+    public String getWebPageLanguage(String webPageTitle) throws IOException {
+        String language = null;
+        String url = LANGUAGE_DETECTOR+"?access_key="+ ACCESS_KEY +"&query="+webPageTitle;
+        System.out.println("url : "+url);
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder().url(url).method("GET", null).build();
+        com.squareup.okhttp.Response response = client.newCall(request).execute();
+
+        if(response.isSuccessful()){
+            String responseBody = response.body().string();
+            ObjectMapper mapper = new ObjectMapper();
+            try {
+                System.out.println("response Body : "+responseBody);
+                LanguageDetector languageDetectorObj = mapper.readValue(responseBody,
+                        LanguageDetector.class);
+                if(languageDetectorObj.success){
+                    language = languageDetectorObj.results.get(0).language_name;
+                }
+            } catch (JsonProcessingException e) {
+                System.out.println("Failed to parse Language detector response Body");
+            }
+        }
+        return language;
     }
 }
