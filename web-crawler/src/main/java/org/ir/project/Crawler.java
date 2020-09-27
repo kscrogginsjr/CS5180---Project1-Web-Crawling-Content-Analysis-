@@ -118,9 +118,10 @@ public class Crawler{
 
 		//language = helper.getWebPageLanguage(utf_encoded_webPageContent.length() > 1000 ? utf_encoded_webPageContent.substring(0, 1000) : utf_encoded_webPageContent);
 
-		File createDirectory = new File("repository/"+language);
+		File createDirectory = new File("repository/");
 		createDirectory.mkdir();
-		File htmlFile = new File("repository/"+language+"/link_" + visitedLinks.size() + ".html");
+		File htmlFile = new File("repository/link_" + visitedLinks.size() + ".html");
+		//htmlFile.createNewFile();
 		String htmlText = doc.html();
 
 		FileWriter fileWriter = new FileWriter(htmlFile);
