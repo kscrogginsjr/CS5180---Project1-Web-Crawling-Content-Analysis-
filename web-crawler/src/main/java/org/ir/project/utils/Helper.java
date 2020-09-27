@@ -10,12 +10,9 @@ import org.ir.project.Crawler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
-
-import static com.sun.xml.internal.ws.api.message.Packet.Status.Request;
 
 public class Helper {
 
