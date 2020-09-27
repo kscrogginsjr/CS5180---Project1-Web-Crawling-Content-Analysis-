@@ -8,8 +8,8 @@ import os
 from bs4 import BeautifulSoup as bs
 
 #=============  Parse a document (can pass string or open filehandle) ==========
-for filename in os.listdir("./repository"):
-    with open(os.path.join("./repository", filename), 'r', encoding="utf8") as f:
+for filename in os.listdir("../repository"):
+    with open(os.path.join("../repository", filename), 'r', encoding="utf8") as f:
         html_content = f.read()
         f.close()
         soup = bs(html_content, "html.parser")
