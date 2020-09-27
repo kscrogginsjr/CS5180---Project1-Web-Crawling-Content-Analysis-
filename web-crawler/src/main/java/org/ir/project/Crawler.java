@@ -14,6 +14,7 @@ package org.ir.project;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLEncoder;
 import java.util.Properties;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -110,9 +111,16 @@ public class Crawler{
 		System.out.println(url);
 
 		// Download content of webpage
-		File createDirectory = new File("repository");
+		String utf_encoded_webPageContent = URLEncoder.encode(doc.title(), "UTF-8");
+		System.out.println("title : "+doc.title());
+
+		String language = "English";
+
+		language = helper.getWebPageLanguage(utf_encoded_webPageContent.length() > 1000 ? utf_encoded_webPageContent.substring(0, 1000) : utf_encoded_webPageContent);
+
+		File createDirectory = new File("repository/"+language);
 		createDirectory.mkdir();
-		File htmlFile = new File("repository/link" + visitedLinks.size() + ".html");
+		File htmlFile = new File("repository/"+language+"/link_" + visitedLinks.size() + ".html");
 		String htmlText = doc.html();
 
 		FileWriter fileWriter = new FileWriter(htmlFile);
