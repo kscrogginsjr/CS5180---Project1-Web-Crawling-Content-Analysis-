@@ -129,6 +129,8 @@ public class Helper {
         }catch (Exception e){
             System.err.println("Exception in getting data from Language API" + e.getLocalizedMessage());
         }
+        assert response != null;
+        response.close();
         return language;
     }
 
