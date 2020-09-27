@@ -10,6 +10,7 @@ import org.ir.project.Crawler;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.concurrent.TimeUnit;
 
@@ -73,10 +74,13 @@ public class Helper {
             path = path.replace("?", "\\?");
             path = path.replace("*", ".*");
 
-            System.out.println("Path :"+path);
+ //           System.out.println("Path :"+path);
 
-            if(urlPath.matches(".*" + path + ".*"))
+            if(urlPath.matches(".*" + path + ".*")){
+                System.out.println("Path matched for disallowd : "+urlPath);
                 return false;
+            }
+
         }
         return true;
     }
@@ -131,4 +135,30 @@ public class Helper {
         return response;
     }
 
+    public boolean isValidUrl(String url){
+
+        if(url == null || url.isEmpty()) return false;
+
+        ArrayList<String> inValidPaths = new ArrayList<>();
+        //inValidPaths.add("?");
+        //inValidPaths.add("#");
+        inValidPaths.add(".pdf");
+        inValidPaths.add(".jpg");
+        inValidPaths.add(".png");
+        inValidPaths.add(".jpeg");
+        inValidPaths.add("mailto:");
+        inValidPaths.add(".mp4");
+        inValidPaths.add(".mp3");
+        inValidPaths.add(".gif");
+        inValidPaths.add(".js");
+        inValidPaths.add(".css");
+        inValidPaths.add(".zip");
+        inValidPaths.add(".rar");
+
+        for(String check : inValidPaths){
+            if(url.contains(check)) return false;
+        }
+
+        return url.startsWith("http://") || url.startsWith("https://");
+    }
 }
