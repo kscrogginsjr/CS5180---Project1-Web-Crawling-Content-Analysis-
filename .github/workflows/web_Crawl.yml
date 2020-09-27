@@ -21,4 +21,6 @@ jobs:
       with:
         java-version: 1.8
     - name: Build with Maven
-      run: mvn -B package --file web-crawler/pom.xml
+      run: mvn -B install --file web-crawler/pom.xml
+    - name: runMainMethod
+      run: mvn exec:java -Dexec.mainClass="org.ir.project.Crawler"
