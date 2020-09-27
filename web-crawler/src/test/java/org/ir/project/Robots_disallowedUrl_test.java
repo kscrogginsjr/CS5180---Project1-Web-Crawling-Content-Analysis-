@@ -36,21 +36,21 @@ public class Robots_disallowedUrl_test {
     public void disAllowspecificPaths() throws IOException {
 
         getDisAllowedPaths();
-        boolean result = helper.isUrlAllowedtoCrawl(disAllowedPathPattern, "/cnn_adspaces/hello/php");
+        boolean result = helper.isUrlAllowedtoCrawl(disAllowedPathPattern, "/pilgrimages/payment/php");
         Assertions.assertFalse(result);
     }
 
     @Test
     public void disAllowspecificPaths_1() throws IOException {
         getDisAllowedPaths();
-        boolean result = helper.isUrlAllowedtoCrawl(disAllowedPathPattern, "egherthtr/browsers/hello/php");
+        boolean result = helper.isUrlAllowedtoCrawl(disAllowedPathPattern, "/pilgrimages/confirm/browsers/hello/php");
         Assertions.assertFalse(result);
     }
 
     @Test
     public void AllowspecificPaths_1() throws IOException {
         getDisAllowedPaths();
-        boolean result = helper.isUrlAllowedtoCrawl(disAllowedPathPattern, "/gsdgerge/hello/php");
+        boolean result = helper.isUrlAllowedtoCrawl(disAllowedPathPattern, "/en/hello/php");
         Assertions.assertTrue(result);
     }
 
