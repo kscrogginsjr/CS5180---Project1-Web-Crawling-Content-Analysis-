@@ -118,9 +118,9 @@ public class Crawler{
 
 		//language = helper.getWebPageLanguage(utf_encoded_webPageContent.length() > 1000 ? utf_encoded_webPageContent.substring(0, 1000) : utf_encoded_webPageContent);
 
-		File createDirectory = new File("repository/");
+		File createDirectory = new File("repository/"+language+"/");
 		createDirectory.mkdir();
-		File htmlFile = new File("repository/link_" + visitedLinks.size() + ".html");
+		File htmlFile = new File(createDirectory.getCanonicalPath()+"/link_" + visitedLinks.size() + ".html");
 		//htmlFile.createNewFile();
 		String htmlText = doc.html();
 
@@ -150,13 +150,13 @@ public class Crawler{
 
 	// Create report.csv to store the final output of urls crawled and outlinks associated with each url
 	public void createReport() {
-		File reportFile = new File("src/report.csv");
+		File reportFile = new File("repository/report.csv");
 		try {
 			BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(reportFile));
-			bufferedWriter.write("URL -> Number of Outlinks \n");
+			bufferedWriter.write("URL, Number of Outlinks \n");
 			report.forEach((k, v) -> {
 				try {
-					bufferedWriter.write("\n" + k + " -> " + v);
+					bufferedWriter.write("\n" + k + ", " + v);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
