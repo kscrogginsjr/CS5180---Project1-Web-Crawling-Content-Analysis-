@@ -1,5 +1,6 @@
 import os
 from bs4 import BeautifulSoup as bs, Comment, Doctype
+import re
 
 #=============  Parse HTML files from repository folder==========
 for filename in os.listdir('../repository'):
@@ -25,3 +26,12 @@ for filename in os.listdir('../repository'):
         with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
             file.write(soup)
             file.close()
+
+def token_count(tag):
+    test_string = tag.text
+    result = len(re.findall(r'\w+', test_string))
+    return result
+
+def get_density(tag, block):
+    density = float(token_count(tag) / token_count(block))
+    return density
