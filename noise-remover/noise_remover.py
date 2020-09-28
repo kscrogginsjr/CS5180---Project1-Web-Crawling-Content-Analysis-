@@ -35,3 +35,15 @@ def token_count(tag):
 def get_density(tag, block):
     density = float(token_count(tag) / token_count(block))
     return density
+
+"""
+Notes: Need to get token count of blocks
+    thoughts - tag.head.text , returns all the children text in a string concatinated
+Need to get token count of single tag
+    can still use tag.text, but might also consider using tag.content and dealing with None case
+
+Do we iterate through each tag one by one and calculate the density
+    maybe put in a dictionary for easy search up after
+
+Do we decompose all the html tags that dont meet the criteria?
+"""
