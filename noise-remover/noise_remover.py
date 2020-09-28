@@ -20,7 +20,7 @@ for filename in os.listdir('../repository'):
         #     match.replaceWithChildren()
         for match in soup.findAll():
             match.replaceWithChildren()
-        # Write altered html file to soupText.html in noise-remover folder
+        # Write altered html files to noise-html-output folder
         soup = str(soup.prettify())
         with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
             file.write(soup)
