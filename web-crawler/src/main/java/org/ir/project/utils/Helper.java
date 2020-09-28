@@ -69,6 +69,9 @@ public class Helper {
         for (String path: listOfdisAllowedPaths) {
             //Check for not allowed to crawl any page
             //If it contains only / -> no pages allowed to crawl
+
+            if(path.isEmpty()) return true;
+
             if(path.equals("\\/")){
                 return false;
             };
