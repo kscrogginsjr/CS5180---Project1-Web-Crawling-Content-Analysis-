@@ -20,10 +20,15 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Build with Maven
-      run: mvn -B install --file web-crawler/pom.xml
-#     - name: runMainMethod
-#       working-directory: web-crawler/
-#       run: mvn compile exec:java
-#     - name: getDir
-#       run: pwd
+#     - name: Build with Maven
+#       run: mvn -B install --file web-crawler/pom.xml
+    - name: runMainMethod
+      working-directory: web-crawler/
+      run: mvn compile exec:java
+    - name: getDir
+      run: pwd
+    - uses: actions/upload-artifact@v2
+      with:
+        name: my-artifact
+        path: repository
+
