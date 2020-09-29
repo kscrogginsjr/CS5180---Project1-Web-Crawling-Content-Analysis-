@@ -2,6 +2,24 @@ import os
 from bs4 import BeautifulSoup as bs, Comment, Doctype
 import re
 
+def token_count(tag):
+    test_string = tag.text
+    result = len(re.findall(r'\w+', test_string))
+    return result
+
+def tag_count(tag):
+    # +1 for counting itself
+    return len(list(tag.descendants)) + 1
+
+def get_density(tag):
+    """
+    Char num : number of all characters in its subtree
+    Tag num : number of all Tags in its sub tree
+    density = Char/Tag
+    """
+    density = float(token_count(tag)) / float(tag_count(tag))
+    return density
+
 #=============  Parse HTML files from repository folder==========
 for filename in os.listdir('../repository'):
     with open(os.path.join('../repository', filename), 'r', encoding='utf8') as f:
@@ -17,21 +35,22 @@ for filename in os.listdir('../repository'):
         for tags in soup.find_all(['link', 'script', 'style', 'input', 'nav', 'noindex', 'img', 'button', 'video', 'br', 'meta']):
             tags.decompose()
 
+        body = soup.find('body')
+        #calculating tag densitys
+        tag_densitys_dict = {}
+        #should return the list of the tags in BeautifulSoup Object Type
+        tags = [tag for tag in body.find_all()]
+        #should get all the densitys in an array 
+        for tag in tags:
+            tag_densitys_dict[tag] = get_density(tag)
+        threshold = print(tag_densitys_dict[tags[0]])
+
         # Write altered html files to noise-html-output folder
-        soup = str(soup.prettify())
-        with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
-            file.write(soup)
-            file.close()
+        # soup = str(soup.prettify())
+        # with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
+        #     file.write(soup)
+        #     file.close()
     break
-
-def token_count(tag):
-    test_string = tag.text
-    result = len(re.findall(r'\w+', test_string))
-    return result
-
-def get_density(tag, block):
-    density = float(token_count(tag) / token_count(block))
-    return density
 
 """
 Notes: Need to get token count of blocks
