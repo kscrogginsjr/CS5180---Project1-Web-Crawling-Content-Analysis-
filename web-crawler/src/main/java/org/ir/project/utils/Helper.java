@@ -170,6 +170,7 @@ public class Helper {
         inValidPaths.add(".css");
         inValidPaths.add(".zip");
         inValidPaths.add(".rar");
+        inValidPaths.add(".svg");
 
         for(String check : inValidPaths){
             if(url.contains(check)) return false;
