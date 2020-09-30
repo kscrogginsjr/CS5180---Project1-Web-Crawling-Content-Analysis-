@@ -93,13 +93,16 @@ public class Helper {
     public String getWebPageLanguage(String webPageTitle) {
         String language = null;
         String url = LANGUAGE_DETECTOR+"?access_key="+ ACCESS_KEY +"&query="+webPageTitle;
-        int retry = 2;
+        int retry = 4;
         Response response = null;
 
         try {
             do {
                 response = getResponseFromLanguaDetectore(url);
+                if(retry!=4) System.out.println("API Failed");
                 retry--;
+                //Delaying the API hits
+                Thread.sleep(1000);
             } while (retry > 0 && !response.isSuccessful());
 
             if (response.isSuccessful()) {
@@ -114,8 +117,8 @@ public class Helper {
                     } else if (languageDetectorObj.error != null) {
                         System.err.println("Issue with the Language detector API");
                         if (languageDetectorObj.error.code == 106) {
-                            Thread.sleep(60000);
                             System.out.println("Wait for a minute, you have reached max rate 'hit/min' limit ..... ");
+                            Thread.sleep(60000);
                             getWebPageLanguage(webPageTitle);
                         }
                     }
@@ -125,7 +128,7 @@ public class Helper {
             } else {
                 System.err.println("Failed to get the Language detector \n response : " + response.body().string() + " \n status code : " + response.code());
             }
-            Thread.sleep(1000);
+            //Thread.sleep(1000);
         }catch (Exception e){
             System.err.println("Exception in getting data from Language API" + e.getLocalizedMessage());
         }
@@ -157,7 +160,7 @@ public class Helper {
 
         ArrayList<String> inValidPaths = new ArrayList<>();
         //inValidPaths.add("?");
-        //inValidPaths.add("#");
+        inValidPaths.add("#");
         inValidPaths.add(".pdf");
         inValidPaths.add(".jpg");
         inValidPaths.add(".png");

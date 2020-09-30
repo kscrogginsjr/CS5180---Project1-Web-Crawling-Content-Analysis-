@@ -105,13 +105,15 @@ public class Crawler{
 			System.out.println("Not allowed to Crawl : "+ url);
 			return;
 		}
-		
-		Document doc = Jsoup.connect(url).ignoreHttpErrors(true).get();
+
+		//Document doc = Jsoup.connect(url).ignoreHttpErrors(true).get();
+		Document doc = Jsoup.parse(new URL(url).openStream(), "UTF-8", url);
+		System.out.println("Body : "+doc.body().children().text());
 		visitedLinks.add(url);
 		System.out.println(url);
 
 		// Download content of webpage
-		String utf_encoded_webPageContent = URLEncoder.encode(doc.title(), "UTF-8");
+		String utf_encoded_webPageContent = URLEncoder.encode(doc.body().children().text(), "UTF-8");
 		System.out.println("title : "+doc.title());
 
 		String language = "English";
