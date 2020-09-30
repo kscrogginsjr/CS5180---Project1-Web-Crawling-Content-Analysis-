@@ -29,6 +29,6 @@ jobs:
       run: pwd
     - uses: actions/upload-artifact@v2
       with:
-        name: my-artifact
+        name: repository
         path: web-crawler/repository/
 
