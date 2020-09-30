@@ -98,7 +98,7 @@ public class Crawler{
 			String host = uri.getHost();
 			HashSet<String> disAllowedPaths = null;
 			if (!hostDisallowedUrlPath.containsKey(host)) {
-				System.out.println("No robots fetched for this Base URL");
+				//System.out.println("No robots fetched for this Base URL");
 				disAllowedPaths = helper.getDisalowedPaths_From_robotosFile(uri.getProtocol() + "://" + uri.getHost());
 				hostDisallowedUrlPath.put(host, disAllowedPaths);
 			}
@@ -111,7 +111,7 @@ public class Crawler{
 			//Document doc = Jsoup.connect(url).ignoreHttpErrors(true).get();
 
 			doc = Jsoup.parse(new URL(url).openStream(), "UTF-8", url);
-			System.out.println("Body : " + doc.body().children().text());
+			//System.out.println("Body : " + doc.body().children().text());
 			visitedLinks.add(url);
 			System.out.println(url);
 
@@ -146,8 +146,8 @@ public class Crawler{
 			// process each outlink
 			for (Element link : sublinks) {
 				if (!helper.isValidUrl(link.attr("abs:href"))) {
-					System.out.println(link);
-					System.out.println("Not a valid URL : " + link.attr("abs:href"));
+					//System.out.println(link);
+					//System.out.println("Not a valid URL : " + link.attr("abs:href"));
 					continue;
 				}
 				processPage(link.attr("abs:href"));

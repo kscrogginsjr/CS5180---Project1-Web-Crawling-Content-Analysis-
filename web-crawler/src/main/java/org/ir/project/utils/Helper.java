@@ -99,25 +99,25 @@ public class Helper {
         try {
             do {
                 response = getResponseFromLanguaDetectore(url);
-                if(retry!=4) System.out.println("API Failed");
+               // if(retry!=4) System.out.println("API Failed");
                 retry--;
                 //Delaying the API hits
-               // Thread.sleep(1000);
+                Thread.sleep(2000);
             } while (retry > 0 && !response.isSuccessful());
 
             if (response.isSuccessful()) {
                 String responseBody = response.body().string();
                 ObjectMapper mapper = new ObjectMapper();
                 try {
-                    System.out.println("response Body : " + responseBody);
+                   // System.out.println("response Body : " + responseBody);
                     LanguageDetector languageDetectorObj = mapper.readValue(responseBody,
                             LanguageDetector.class);
                     if (languageDetectorObj.success) {
                         language = languageDetectorObj.results.get(0).language_name;
                     } else if (languageDetectorObj.error != null) {
-                        System.err.println("Issue with the Language detector API");
+                       // System.err.println("Issue with the Language detector API");
                         if (languageDetectorObj.error.code == 106) {
-                            System.out.println("Wait for a minute, you have reached max rate 'hit/min' limit ..... ");
+                           // System.out.println("Wait for a minute, you have reached max rate 'hit/min' limit ..... ");
                             Thread.sleep(60000);
                             getWebPageLanguage(webPageTitle);
                         }
@@ -150,7 +150,7 @@ public class Helper {
         okhttp3.Request request = new Request.Builder().url(url).method("GET", null).build();
         response = client.newCall(request).execute();
         //client.setConnectionPool(ConnectionPool.getDefault());
-        System.out.println("Connection count : "+client.connectionPool().connectionCount());
+        //System.out.println("Connection count : "+client.connectionPool().connectionCount());
         return response;
     }
 
