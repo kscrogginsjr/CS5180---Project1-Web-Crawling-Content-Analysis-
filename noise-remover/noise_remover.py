@@ -1,6 +1,11 @@
 import os
-from bs4 import BeautifulSoup as bs, Comment, Doctype
+from bs4 import BeautifulSoup as bs, Comment, Doctype, Tag
 import re
+
+
+ID_MAX_DENSITY_SUM = 'max-density-sum'
+tag_densities_dict = {}
+max_tag_densisities_dict = {}
 
 def token_count(tag):
     test_string = tag.text
@@ -20,6 +25,37 @@ def get_density(tag):
     density = float(token_count(tag)) / float(tag_count(tag))
     return density
 
+# def get_max_density_sum(tag: Tag):
+#     max_density_sum = 0
+#     temp_max = 0
+#     max_child = tag   
+#     for child in tag.children:
+#         if isinstance(child, Tag):
+#             temp_max = tag_densities_dict[child]
+#             if temp_max > max_density_sum:
+#                 max_child = child
+#                 max_density_sum = temp_max
+#             next_max = get_max_density_sum(child)
+#     max_tag_densisities_dict[max_child] = max_density_sum
+#     return max_density_sum
+
+def get_max_density_sum(tag: Tag) -> float:
+    try:
+        max_density_sum = tag_densities_dict[tag]
+    except KeyError:
+        max_density_sum = 0
+    temp_max = 0
+    for child in tag.children:
+        if isinstance(child, Tag):
+            temp_max = get_max_density_sum(child)
+        max_density_sum = max(temp_max, max_density_sum)
+    max_tag_densisities_dict[tag] = max_density_sum
+    return max_density_sum
+
+# def find_max_density(tag: Tag, max_density_sum: float):
+
+# def find_tag(tag: Tag, text: str, value: float):
+
 #=============  Parse HTML files from repository folder==========
 for filename in os.listdir('../repository'):
     with open(os.path.join('../repository', filename), 'r', encoding='utf8') as f:
@@ -35,10 +71,9 @@ for filename in os.listdir('../repository'):
         for tags in soup.find_all(['link', 'script', 'style', 'input', 'nav', 'noindex', 'img', 'button', 'video', 'br', 'meta']):
             tags.decompose()
 
-        body = soup.find('body')
+        body = soup.body
         #calculating tag densitys
         #Key:BSObject, Value = Density(float)
-        tag_densities_dict = {}
         #should return the list of the tags in BeautifulSoup Object Type
         tags = [tag for tag in body.find_all()]
         #should get all the densitys in an array 
@@ -46,10 +81,9 @@ for filename in os.listdir('../repository'):
             tag_densities_dict[tag] = get_density(tag)
         #body density is initial threshold    
         threshold = tag_densities_dict[tags[0]]
-        for child in body.children:
-            if tag_densities_dict[child] >= threshold:        
-                for kids in child.children:
-
+        max_density = get_max_density_sum(body)
+        print(tag_densities_dict.values())
+        print(max_tag_densisities_dict.values())
         # Write altered html files to noise-html-output folder
         # soup = str(soup.prettify())
         # with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
