@@ -132,23 +132,31 @@ public class Helper {
         }catch (Exception e){
             System.err.println("Exception in getting data from Language API" + e.getLocalizedMessage());
         }
-        assert response != null;
-        response.close();
+        finally {
+            assert null != response;
+            response.close();
+        }
+
         return language;
     }
 
 
-    private Response getResponseFromLanguaDetectore(String url) throws IOException {
+    private Response getResponseFromLanguaDetectore(String url) throws InterruptedException {
         OkHttpClient client = new OkHttpClient.Builder()
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
                 .build();
 
-        Response response;
+        Response response = null;
         System.out.println("URL  : "+url);
         okhttp3.Request request = new Request.Builder().url(url).method("GET", null).build();
-        response = client.newCall(request).execute();
+        try {
+            response = client.newCall(request).execute();
+        } catch (IOException e) {
+            Thread.sleep(50000);
+            getResponseFromLanguaDetectore(url);
+        }
         //client.setConnectionPool(ConnectionPool.getDefault());
         //System.out.println("Connection count : "+client.connectionPool().connectionCount());
         return response;
