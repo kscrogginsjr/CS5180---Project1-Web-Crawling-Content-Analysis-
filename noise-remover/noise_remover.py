@@ -37,13 +37,18 @@ for filename in os.listdir('../repository'):
 
         body = soup.find('body')
         #calculating tag densitys
-        tag_densitys_dict = {}
+        #Key:BSObject, Value = Density(float)
+        tag_densities_dict = {}
         #should return the list of the tags in BeautifulSoup Object Type
         tags = [tag for tag in body.find_all()]
         #should get all the densitys in an array 
         for tag in tags:
-            tag_densitys_dict[tag] = get_density(tag)
-        threshold = print(tag_densitys_dict[tags[0]])
+            tag_densities_dict[tag] = get_density(tag)
+        #body density is initial threshold    
+        threshold = tag_densities_dict[tags[0]]
+        for child in body.children:
+            if tag_densities_dict[child] >= threshold:        
+                for kids in child.children:
 
         # Write altered html files to noise-html-output folder
         # soup = str(soup.prettify())
