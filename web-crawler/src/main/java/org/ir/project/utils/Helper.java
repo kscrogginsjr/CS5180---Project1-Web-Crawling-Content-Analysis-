@@ -102,7 +102,7 @@ public class Helper {
                 if(retry!=4) System.out.println("API Failed");
                 retry--;
                 //Delaying the API hits
-                Thread.sleep(1000);
+               // Thread.sleep(1000);
             } while (retry > 0 && !response.isSuccessful());
 
             if (response.isSuccessful()) {

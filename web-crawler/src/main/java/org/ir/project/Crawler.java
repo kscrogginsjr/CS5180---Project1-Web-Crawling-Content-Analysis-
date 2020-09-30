@@ -86,69 +86,77 @@ public class Crawler{
 
 	// This function processes the URL, checks politeness policy, downloads the
 	// content of the page and crawls outlinks of the current page
-	public void processPage(String url) throws IOException {
+	public void processPage(String url) {
 		// Crawl further pages only if limit is not reached or page is not previously visited
 		if (visitedLinks.size() >= crawlLimit || visitedLinks.contains(url)) {
 			return;
 		}
-		
-		URL uri = new URL(url);
-		String host = uri.getHost();
-		HashSet<String> disAllowedPaths = null;
-		if(!hostDisallowedUrlPath.containsKey(host)){
-			System.out.println("No robots fetched for this Base URL");
-			disAllowedPaths = helper.getDisalowedPaths_From_robotosFile(uri.getProtocol()+"://"+uri.getHost());
-			hostDisallowedUrlPath.put(host, disAllowedPaths);
-		}
-		disAllowedPaths = hostDisallowedUrlPath.get(host);
-		if(!helper.isUrlAllowedtoCrawl(disAllowedPaths, url)) {
-			System.out.println("Not allowed to Crawl : "+ url);
+
+		Document doc = null;
+		try {
+			URL uri = new URL(url);
+			String host = uri.getHost();
+			HashSet<String> disAllowedPaths = null;
+			if (!hostDisallowedUrlPath.containsKey(host)) {
+				System.out.println("No robots fetched for this Base URL");
+				disAllowedPaths = helper.getDisalowedPaths_From_robotosFile(uri.getProtocol() + "://" + uri.getHost());
+				hostDisallowedUrlPath.put(host, disAllowedPaths);
+			}
+			disAllowedPaths = hostDisallowedUrlPath.get(host);
+			if (!helper.isUrlAllowedtoCrawl(disAllowedPaths, url)) {
+				System.out.println("Not allowed to Crawl : " + url);
+				return;
+			}
+
+			//Document doc = Jsoup.connect(url).ignoreHttpErrors(true).get();
+
+			doc = Jsoup.parse(new URL(url).openStream(), "UTF-8", url);
+			System.out.println("Body : " + doc.body().children().text());
+			visitedLinks.add(url);
+			System.out.println(url);
+
+			// Download content of webpage
+			String utf_encoded_webPageContent = URLEncoder.encode(doc.body().children().text(), "UTF-8");
+			System.out.println("title : " + doc.title());
+
+			String language = "English";
+
+			language = helper.getWebPageLanguage(utf_encoded_webPageContent.length() > 1000 ? utf_encoded_webPageContent.substring(0, 1000) : utf_encoded_webPageContent);
+
+			File createDirectory = new File("repository/");
+			createDirectory.mkdir();
+			createDirectory = new File("repository/" + language);
+			createDirectory.mkdir();
+			File htmlFile = new File(createDirectory.getCanonicalPath() + "/link_" + visitedLinks.size() + ".html");
+			//htmlFile.createNewFile();
+			String htmlText = doc.html();
+
+			FileWriter fileWriter = new FileWriter(htmlFile);
+			fileWriter.write(htmlText);
+
+			fileWriter.flush();
+			fileWriter.close();
+
+			// retrieve outlinks of webpage
+			Elements sublinks = doc.select("a[href]");
+
+			int outlinkCount = sublinks.size();
+			report.put(url, outlinkCount);
+
+			// process each outlink
+			for (Element link : sublinks) {
+				if (!helper.isValidUrl(link.attr("abs:href"))) {
+					System.out.println(link);
+					System.out.println("Not a valid URL : " + link.attr("abs:href"));
+					continue;
+				}
+				processPage(link.attr("abs:href"));
+			}
+		}catch (Exception e){
+			System.err.println("Exception : "+e.getLocalizedMessage());
 			return;
 		}
 
-		//Document doc = Jsoup.connect(url).ignoreHttpErrors(true).get();
-		Document doc = Jsoup.parse(new URL(url).openStream(), "UTF-8", url);
-		System.out.println("Body : "+doc.body().children().text());
-		visitedLinks.add(url);
-		System.out.println(url);
-
-		// Download content of webpage
-		String utf_encoded_webPageContent = URLEncoder.encode(doc.body().children().text(), "UTF-8");
-		System.out.println("title : "+doc.title());
-
-		String language = "English";
-
-		language = helper.getWebPageLanguage(utf_encoded_webPageContent.length() > 1000 ? utf_encoded_webPageContent.substring(0, 1000) : utf_encoded_webPageContent);
-
-		File createDirectory = new File("repository/");
-		createDirectory.mkdir();
-		createDirectory = new File("repository/"+language);
-		createDirectory.mkdir();
-		File htmlFile = new File(createDirectory.getCanonicalPath()+"/link_" + visitedLinks.size() + ".html");
-		//htmlFile.createNewFile();
-		String htmlText = doc.html();
-
-		FileWriter fileWriter = new FileWriter(htmlFile);
-		fileWriter.write(htmlText);
-
-		fileWriter.flush();
-		fileWriter.close();
-
-		// retrieve outlinks of webpage
-		Elements sublinks = doc.select("a[href]");
-
-		int outlinkCount = sublinks.size();
-		report.put(url, outlinkCount);
-
-		// process each outlink
-		for (Element link : sublinks) {
-			if(!helper.isValidUrl(link.attr("abs:href"))) {
-				System.out.println(link);
-				System.out.println("Not a valid URL : "+ link.attr("abs:href"));
-				continue;
-			}
-			processPage(link.attr("abs:href"));
-		}
 	}
 
 
