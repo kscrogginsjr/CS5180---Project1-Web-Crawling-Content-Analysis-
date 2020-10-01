@@ -2,6 +2,7 @@ package org.ir.project.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import okhttp3.ConnectionPool;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -33,6 +34,7 @@ public class Helper {
         //System.out.println(response.getStatusCode());
         if(!response.isSuccessful() || response.code() != 200) {
             System.out.println("Robots.txt not found");
+            response.close();
             return  new HashSet<>();
         }
 
@@ -60,6 +62,7 @@ public class Helper {
                 }
             }
         }
+        response.close();
         return diasslowedUrls;
     }
 
@@ -146,6 +149,7 @@ public class Helper {
                 .connectTimeout(60, TimeUnit.SECONDS)
                 .writeTimeout(60, TimeUnit.SECONDS)
                 .readTimeout(60, TimeUnit.SECONDS)
+                .connectionPool(new ConnectionPool())
                 .build();
 
         Response response = null;
@@ -155,10 +159,13 @@ public class Helper {
             response = client.newCall(request).execute();
         } catch (IOException e) {
             Thread.sleep(50000);
+            client.connectionPool().evictAll();
             getResponseFromLanguaDetectore(url);
         }
         //client.setConnectionPool(ConnectionPool.getDefault());
-        //System.out.println("Connection count : "+client.connectionPool().connectionCount());
+        //System.out.println("Connection count :
+        // "+client.connectionPool().connectionCount());
+        client.connectionPool().evictAll();
         return response;
     }
 
@@ -167,7 +174,7 @@ public class Helper {
         if(url == null || url.isEmpty()) return false;
 
         ArrayList<String> inValidPaths = new ArrayList<>();
-        //inValidPaths.add("?");
+        inValidPaths.add("?");
         inValidPaths.add("#");
         inValidPaths.add(".pdf");
         inValidPaths.add(".jpg");
