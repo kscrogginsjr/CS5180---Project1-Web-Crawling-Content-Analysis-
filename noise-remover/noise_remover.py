@@ -1,6 +1,7 @@
 import os
 from bs4 import BeautifulSoup as bs, Comment, Doctype, Tag
 import re
+import html
 
 DENSITY_ID = "density"
 DENSITY_SUM_ID = "density_sum"
@@ -112,10 +113,14 @@ def clean_up(soup):
     return soup
 
 def get_plain_text(soup):
-    output = soup.get_text()
-    output = re.compile(r'(\s{2,}|\t)').sub(' ', output)
-    output = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, output.splitlines())))
-    return output
+    for tag in soup.find_all():
+        tag.unwrap()
+
+    pretty = soup.prettify()
+    remove_body = re.sub(r'<.*?>', '', pretty).strip()
+
+    splits = [x.strip() for x in remove_body.split('\n')]
+    return html.unescape('\n'.join(splits))
 
 def write_to_file(content, filename):
     with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
