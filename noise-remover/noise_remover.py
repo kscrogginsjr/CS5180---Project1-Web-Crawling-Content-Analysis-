@@ -136,7 +136,8 @@ def compute_density(html_doc, filename):
     mark_tag_content(soup, threshold)
 
     #Remove content
-    mark_zero = soup.find_all(attrs={MARK_ID, 0})
+    tag_look_up={MARK_ID : 0}
+    mark_zero = soup.find_all(**tag_look_up)
     [tag.decompose() for tag in mark_zero]
 
     # remove extra whitespace and duplicate newlines
