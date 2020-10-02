@@ -188,7 +188,7 @@ def compute_density(html_doc):
 def extract_text(folder_name):
     #=============  Parse HTML files from repository folder==========
     for filename in os.listdir(folder_name):
-        with open(os.path.join('folder_name', filename), 'r', encoding='utf8') as f:
+        with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
             html_doc = f.read()
             compute_density(html_doc)
         break
