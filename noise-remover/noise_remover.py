@@ -16,17 +16,14 @@ def tag_count(tag):
     return len(list(tag.descendants)) + 1
 
 def get_density(tag):
-    density = float(token_count(tag)) / float(tag_count(tag))
-    return density
+    return float(token_count(tag)) / float(tag_count(tag))
 
 def search_tag(tag: Tag, id: str, density: float) -> Tag:
     id = str(id)
     density = str(density)
-    try:
-        if tag[id] == density:
-            return tag
-    except KeyError:
-        pass
+
+    if id in tag and tag[id] == density:
+        return tag
 
     tag_id_lookup = {id: density}
     target = tag.find_next(**tag_id_lookup)
@@ -38,10 +35,10 @@ def search_tag(tag: Tag, id: str, density: float) -> Tag:
     return target
 
 def get_max_density_sum(tag: Tag) -> float:
-    try:
+    max_density_sum = 0
+    if DENSITY_ID in tag:
         max_density_sum = tag[DENSITY_ID]
-    except KeyError:
-        max_density_sum = 0
+
     temp_max = 0
     for child in tag.children:
         if isinstance(child, Tag):
@@ -61,7 +58,7 @@ def get_threshold(tag: Tag, max_density_sum: float) -> float:
     threshold = float(target[DENSITY_ID])
     set_mark(target, 1)
     parent = target.parent
-    while parent.name.lower() != 'html':
+    while parent.name != 'html':
         text_density = float(parent[DENSITY_ID])
         threshold = min(threshold, text_density)
         parent[MARK_ID] = 2
@@ -107,10 +104,10 @@ def clean_up(soup):
     return soup
 
 def get_plain_text(soup):
-    check = soup.get_text()
-    check = re.compile(r'(\s{2,}|\t)').sub(' ', check)
-    check = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, check.splitlines())))
-    print(check)
+    output = soup.get_text()
+    output = re.compile(r'(\s{2,}|\t)').sub(' ', output)
+    output = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, output.splitlines())))
+    return output
 
 def write_to_file(content, filename):
     with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
@@ -122,10 +119,6 @@ def compute_density(html_doc, filename):
 
     # Remove any comments in the html
     soup = clean_up(soup)
-
-    baseline = soup.get_text()
-    baseline = re.compile(r'(\s{2,}|\t)').sub(' ', baseline)
-    baseline = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, baseline.splitlines())))
 
     #Calculate tag denisities for every tag in the html doc
     get_tag_density(soup)
@@ -142,25 +135,15 @@ def compute_density(html_doc, filename):
     #Mark content to be removed and kept
     mark_tag_content(soup, threshold)
 
-    write_to_file(soup.prettify(), filename + "beforeremoval")
-
     #Remove content
-    id_tag_lookup = {MARK_ID: 0}
-    zero_elements = soup.find_all(**id_tag_lookup)
-    [z.decompose() for z in zero_elements]
-
-    # id_tag_lookup = {MARK_ID: 0}
-    # zero_elements = soup.find_all(**id_tag_lookup)
-    # [z.extract() for z in zero_elements]
-    output_dirty = soup.get_text()
+    mark_zero = soup.find_all(attrs={MARK_ID, 0})
+    [tag.decompose() for tag in mark_zero]
 
     # remove extra whitespace and duplicate newlines
-    output_dirty = re.compile(r'(\s{2,}|\t)').sub(' ', output_dirty)
-    output_cleaned = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, output_dirty.splitlines())))
+    output = get_plain_text(soup)
 
     # Write altered html files to noise-html-output folder
-    write_to_file(output_cleaned, filename)
-    write_to_file(baseline, filename + "_baseline")
+    write_to_file(output, filename)
 
 def extract_text(folder_name):
     #=============  Parse HTML files from repository folder==========
@@ -168,7 +151,6 @@ def extract_text(folder_name):
         with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
             html_doc = f.read()
             compute_density(html_doc, filename)
-        break
 
 if __name__ == "__main__":
     folder_name = '../repository'
