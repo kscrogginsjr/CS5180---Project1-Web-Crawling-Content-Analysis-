@@ -2,17 +2,9 @@ import os
 from bs4 import BeautifulSoup as bs, Comment, Doctype, Tag
 import re
 
-"""
-Key: bs Tag
-Value: float (density)
-"""
-tag_densities = {}
-max_tag_densities = {}
-"""
-Key: bs Tag
-Value: int
-"""
-content_marks = {}
+DENSITY_ID = "density"
+DENSITY_SUM_ID = "density_sum"
+MARK_ID = "mark"
 
 def token_count(tag):
     test_string = tag.text
@@ -24,42 +16,30 @@ def tag_count(tag):
     return len(list(tag.descendants)) + 1
 
 def get_density(tag):
-    """
-    Char num: number of all characters in its subtree
-    Tag num: number of all Tags in its sub tree
-    density: Char/Tag
-    """
     density = float(token_count(tag)) / float(tag_count(tag))
     return density
 
-def search_tag(tag: Tag, max_density_sum: float) -> Tag:
-    """
-    A method for returning the first occurrence of a Tag having the value specified
-    for the attribute provided
-    :param tag:
-    :param attribute:
-    :param value:
-    :return:
-    """
+def search_tag(tag: Tag, id: str, density: float) -> Tag:
+    id = str(id)
+    density = str(density)
     try:
-        target = tag_densities[tag]
-        if target == max_density_sum:
+        if tag[id] == density:
             return tag
     except KeyError:
-        target = None
+        pass
+
+    tag_id_lookup = {id: density}
+    target = tag.find_next(**tag_id_lookup)
     if target is None:
         for sibling in tag.descendants:
             if isinstance(sibling, Tag):
-                target = search_tag(sibling, max_density_sum)
+                target = search_tag(sibling, id, density)
                 break
-    for k,v in tag_densities.items():
-         if v == target:
-             target = k          
     return target
 
 def get_max_density_sum(tag: Tag) -> float:
     try:
-        max_density_sum = tag_densities[tag]
+        max_density_sum = tag[DENSITY_ID]
     except KeyError:
         max_density_sum = 0
     temp_max = 0
@@ -67,68 +47,52 @@ def get_max_density_sum(tag: Tag) -> float:
         if isinstance(child, Tag):
             temp_max = get_max_density_sum(child)
         max_density_sum = max(temp_max, max_density_sum)
-    max_tag_densities[tag] = max_density_sum
+    tag[DENSITY_SUM_ID] = max_density_sum
     return max_density_sum
 
 def get_tag_density(soup):
     for tag in soup.findAll():
-        tag_densities[tag] = get_density(tag)
-    # tag_densities[soup] = get_density(soup)
+        tag[DENSITY_ID] = get_density(tag)
+
+    soup[DENSITY_ID] = get_density(soup)
 
 def get_threshold(tag: Tag, max_density_sum: float) -> float:
-    target = search_tag(tag, max_density_sum)
-    threshold = tag_densities[target]
+    target = search_tag(tag, DENSITY_SUM_ID, max_density_sum)
+    threshold = float(target[DENSITY_ID])
     set_mark(target, 1)
-    parent = target
-    while parent.name != 'html' and parent.name != 'body':
-        text_density = tag_densities[parent]
+    parent = target.parent
+    while parent.name.lower() != 'html':
+        text_density = float(parent[DENSITY_ID])
         threshold = min(threshold, text_density)
-        content_marks[parent] = 2
+        parent[MARK_ID] = 2
         parent = parent.parent
-    return max_density_sum
+    return threshold
 
 def set_mark(tag: Tag, mark: int):
-    content_marks[tag] = mark
+    tag[MARK_ID] = mark
     for child in tag.children:
         if isinstance(child, Tag):
             set_mark(child, mark)
 
 def mark_tag_content(tag: Tag, threshold: float):
-    # print(tag.name)
-    # print(tag)
-    
-    if isinstance(tag, Tag):
-        for child in tag.children:
-            if isinstance(child, Tag) and child.name != 'body':
-                mark_tag_content(child, threshold)
-
-    if tag.name == 'body':
-        return
-
-    text_density = tag_densities[tag]
-    max_density_sum = max_tag_densities[tag]
-    mark = content_marks[tag]
+    text_density = float(tag[DENSITY_ID])
+    max_density_sum = float(tag[DENSITY_SUM_ID])
+    mark = int(tag[MARK_ID])
 
     if mark != 1 and threshold > text_density: 
         get_max_density_sum_tag(tag, max_density_sum)
         if isinstance(tag, Tag):
             for child in tag.children:
-                if isinstance(child, Tag) and child.name != 'body':
-                    mark_tag_content(child, threshold)
+                mark_tag_content(child, threshold)
 
 def get_max_density_sum_tag(tag: Tag, max_density_sum: float):
-    """
-    Finds the tag having the max density sum and "marks" it for inclusion later
-    :param tag:
-    :param max_density_sum:
-    """
-    target = search_tag(tag, max_density_sum)
-    mark = content_marks[target]
+    target = search_tag(tag, DENSITY_SUM_ID, max_density_sum)
+    mark = int(tag[MARK_ID])
     if mark != 1:
         set_mark(target, 1)
         parent = target.parent
         while parent.name != 'html':
-            content_marks[target] = 2 #keep this tag and descendants
+            parent[MARK_ID] = 2 #keep this tag and descendants
             parent = parent.parent
 
 def clean_up(soup):
@@ -142,48 +106,61 @@ def clean_up(soup):
     
     return soup
 
-def compute_density(html_doc, filename):
-    soup = bs(html_doc, 'html.parser').body
-    # Remove any comments in the html
-    soup = clean_up(soup)
-
+def get_plain_text(soup):
     check = soup.get_text()
     check = re.compile(r'(\s{2,}|\t)').sub(' ', check)
     check = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, check.splitlines())))
-
     print(check)
+
+def write_to_file(content, filename):
+    with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
+        file.write(content)
+        file.close()
+
+def compute_density(html_doc, filename):
+    soup = bs(html_doc, 'html.parser').body
+
+    # Remove any comments in the html
+    soup = clean_up(soup)
+
+    baseline = soup.get_text()
+    baseline = re.compile(r'(\s{2,}|\t)').sub(' ', baseline)
+    baseline = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, baseline.splitlines())))
+
     #Calculate tag denisities for every tag in the html doc
     get_tag_density(soup)
+
     #Calculate max density sum to normalize threshold
     max_density_sum = get_max_density_sum(soup)
+
     #Initialize content_marks dict to mark content for removing or keeping
     set_mark(soup, 0)
-    # content_marks[soup] = 1
+
     #Calculate threshold to know which content to keep and which to remove
     threshold = get_threshold(soup, max_density_sum)
+
     #Mark content to be removed and kept
     mark_tag_content(soup, threshold)
-    print(content_marks.values())
+
+    write_to_file(soup.prettify(), filename + "beforeremoval")
+
     #Remove content
+    id_tag_lookup = {MARK_ID: 0}
+    zero_elements = soup.find_all(**id_tag_lookup)
+    [z.decompose() for z in zero_elements]
+
+    # id_tag_lookup = {MARK_ID: 0}
+    # zero_elements = soup.find_all(**id_tag_lookup)
+    # [z.extract() for z in zero_elements]
     output_dirty = soup.get_text()
-    for tag, value in content_marks.items():
-        if value == 2:
-            output_dirty += tag.get_text()
-            # removeText = str(tag.get_text()) 
-            # output_dirty = output_dirty.replace(removeText, "") + "\n"
-    output_dirty = soup.get_text()
+
     # remove extra whitespace and duplicate newlines
     output_dirty = re.compile(r'(\s{2,}|\t)').sub(' ', output_dirty)
     output_cleaned = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, output_dirty.splitlines())))
 
     # Write altered html files to noise-html-output folder
-    with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
-        file.write(output_cleaned)
-        file.close()
-
-    with open(os.path.join('./noise-html-output', 'clean_test.html'), 'w', encoding='utf-8') as file:
-        file.write(check)   
-        file.close()
+    write_to_file(output_cleaned, filename)
+    write_to_file(baseline, filename + "_baseline")
 
 def extract_text(folder_name):
     #=============  Parse HTML files from repository folder==========
@@ -192,18 +169,6 @@ def extract_text(folder_name):
             html_doc = f.read()
             compute_density(html_doc, filename)
         break
-
-"""
-Notes: Need to get token count of blocks
-    thoughts - tag.head.text , returns all the children text in a string concatinated
-Need to get token count of single tag
-    can still use tag.text, but might also consider using tag.content and dealing with None case
-
-Do we iterate through each tag one by one and calculate the density
-    maybe put in a dictionary for easy search up after
-
-Do we decompose all the html tags that dont meet the criteria?
-"""
 
 if __name__ == "__main__":
     folder_name = '../repository'
