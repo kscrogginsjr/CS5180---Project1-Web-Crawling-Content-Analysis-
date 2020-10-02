@@ -22,8 +22,11 @@ def search_tag(tag: Tag, id: str, density: float) -> Tag:
     id = str(id)
     density = str(density)
 
-    if id in tag and tag[id] == density:
-        return tag
+    try:
+        if tag[id] == density:
+            return tag
+    except:
+        pass
 
     tag_id_lookup = {id: density}
     target = tag.find_next(**tag_id_lookup)
@@ -35,9 +38,10 @@ def search_tag(tag: Tag, id: str, density: float) -> Tag:
     return target
 
 def get_max_density_sum(tag: Tag) -> float:
-    max_density_sum = 0
-    if DENSITY_ID in tag:
+    try:
         max_density_sum = tag[DENSITY_ID]
+    except:
+        max_density_sum = 0
 
     temp_max = 0
     for child in tag.children:
