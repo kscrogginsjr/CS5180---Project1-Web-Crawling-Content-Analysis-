@@ -106,7 +106,7 @@ def clean_up(soup):
     doctype = soup.findAll(text=lambda text:isinstance(text, Doctype))
     [doctype.extract() for doctype in doctype]
     # Remove tags that will not contain content
-    for tags in soup.find_all(['link', 'script', 'style', 'input', 'nav', 'noindex', 'img', 'button', 'video', 'br', 'meta', 'footer']):
+    for tags in soup.find_all(['script', 'style', 'input', 'nav', 'img', 'button', 'video', 'meta']):
         tags.decompose()
     
     return soup
