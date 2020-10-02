@@ -130,25 +130,25 @@ def write_to_file(content, filename):
 def compute_density(html_doc, filename):
     soup = bs(html_doc, 'html.parser').body
 
-    # Remove unwanted tags, comments and DOCTYPE in html doc
+    # remove unwanted tags, comments and DOCTYPE in html doc
     soup = clean_up(soup)
 
-    #Calculate tag denisities for every tag in html doc
+    # calculate tag denisities for every tag and add to html tags
     set_tag_density(soup)
 
-    #Calculate max density sum to normalize threshold
+    # calculate max density sum to normalize threshold
     max_density_sum = get_max_density_sum(soup)
 
-    #Initialize mark attributes's to 0 
+    # initialize and add mark attributes to 0 to html tags 
     set_mark(soup, 0)
 
-    #Calculate threshold to know which content to keep and which to remove
+    # calculate threshold to know which content to keep and which to remove
     threshold = get_threshold(soup, max_density_sum)
 
-    #Mark content to be removed and kept
+    # mark content to be removed and kept
     mark_tag_content(soup, threshold)
 
-    #Remove any content with a mark of 0
+    # remove any content with a mark of 0
     tag_look_up={MARK : 0}
     mark_zero = soup.find_all(**tag_look_up)
     [tag.decompose() for tag in mark_zero]
@@ -156,10 +156,10 @@ def compute_density(html_doc, filename):
     # remove extra whitespace and duplicate newlines
     output = get_plain_text(soup)
 
-    # Write altered html files to noise-html-output folder
+    # write altered html files to noise-html-output folder
     write_to_file(output, filename)
 
-# Parse all HTML files from folder and extract text
+# parse all html files from folder and extract text
 def extract_text(folder_name):
     for filename in os.listdir(folder_name):
         with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
