@@ -131,7 +131,7 @@ def get_max_density_sum_tag(tag: Tag, max_density_sum: float):
             content_marks[target] = 2 #keep this tag and descendants
             parent = parent.parent
 
-def cleanUp(soup):
+def clean_up(soup):
     comments = soup.findAll(text=lambda text:isinstance(text, Comment))
     [comment.extract() for comment in comments]
     doctype = soup.findAll(text=lambda text:isinstance(text, Doctype))
@@ -142,51 +142,56 @@ def cleanUp(soup):
     
     return soup
 
-#=============  Parse HTML files from repository folder==========
-for filename in os.listdir('../repository'):
-    with open(os.path.join('../repository', "link_1.html"), 'r', encoding='utf8') as f:
-        html_doc = f.read()
-        f.close()
-        soup = bs(html_doc, 'html.parser').body
-        # Remove any comments in the html
-        soup = cleanUp(soup)
+def compute_density(html_doc):
+    soup = bs(html_doc, 'html.parser').body
+    # Remove any comments in the html
+    soup = clean_up(soup)
 
-        check = soup.get_text()
-        check = re.compile(r'(\s{2,}|\t)').sub(' ', check)
-        check = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, check.splitlines())))
-        #Calculate tag denisities for every tag in the html doc
-        get_tag_density(soup)
-        #Calculate max density sum to normalize threshold
-        max_density_sum = get_max_density_sum(soup)
-        #Initialize content_marks dict to mark content for removing or keeping
-        set_mark(soup, 0)
-        # content_marks[soup] = 1
-        #Calculate threshold to know which content to keep and which to remove
-        threshold = get_threshold(soup, max_density_sum)
-        #Mark content to be removed and kept
-        mark_tag_content(soup, threshold)
-        print(content_marks.values())
-        #Remove content
-        output_dirty = soup.get_text()
-        for tag, value in content_marks.items():
-            if value == 2:
-                output_dirty += tag.get_text()
-                # removeText = str(tag.get_text()) 
-                # output_dirty = output_dirty.replace(removeText, "") + "\n"
-        output_dirty = soup.get_text()
-        # remove extra whitespace and duplicate newlines
-        output_dirty = re.compile(r'(\s{2,}|\t)').sub(' ', output_dirty)
-        output_cleaned = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, output_dirty.splitlines())))
+    check = soup.get_text()
+    check = re.compile(r'(\s{2,}|\t)').sub(' ', check)
+    check = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, check.splitlines())))
 
-        # Write altered html files to noise-html-output folder
-        with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
-            file.write(output_cleaned)
-            file.close()
+    print(check)
+    #Calculate tag denisities for every tag in the html doc
+    get_tag_density(soup)
+    #Calculate max density sum to normalize threshold
+    max_density_sum = get_max_density_sum(soup)
+    #Initialize content_marks dict to mark content for removing or keeping
+    set_mark(soup, 0)
+    # content_marks[soup] = 1
+    #Calculate threshold to know which content to keep and which to remove
+    threshold = get_threshold(soup, max_density_sum)
+    #Mark content to be removed and kept
+    mark_tag_content(soup, threshold)
+    print(content_marks.values())
+    #Remove content
+    output_dirty = soup.get_text()
+    for tag, value in content_marks.items():
+        if value == 2:
+            output_dirty += tag.get_text()
+            # removeText = str(tag.get_text()) 
+            # output_dirty = output_dirty.replace(removeText, "") + "\n"
+    output_dirty = soup.get_text()
+    # remove extra whitespace and duplicate newlines
+    output_dirty = re.compile(r'(\s{2,}|\t)').sub(' ', output_dirty)
+    output_cleaned = '\n'.join(list(filter(lambda s: len(s.strip()) > 0, output_dirty.splitlines())))
 
-        with open(os.path.join('./noise-html-output', 'clean_test.html'), 'w', encoding='utf-8') as file:
-            file.write(check)   
-            file.close()
-    break
+    # Write altered html files to noise-html-output folder
+    with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
+        file.write(output_cleaned)
+        file.close()
+
+    with open(os.path.join('./noise-html-output', 'clean_test.html'), 'w', encoding='utf-8') as file:
+        file.write(check)   
+        file.close()
+
+def extract_text(folder_name):
+    #=============  Parse HTML files from repository folder==========
+    for filename in os.listdir(folder_name):
+        with open(os.path.join('folder_name', filename), 'r', encoding='utf8') as f:
+            html_doc = f.read()
+            compute_density(html_doc)
+        break
 
 """
 Notes: Need to get token count of blocks
@@ -199,3 +204,7 @@ Do we iterate through each tag one by one and calculate the density
 
 Do we decompose all the html tags that dont meet the criteria?
 """
+
+if __name__ == "__main__":
+    folder_name = '../repository'
+    extract_text(folder_name)
