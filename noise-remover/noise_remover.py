@@ -7,7 +7,7 @@ DENSITY = "density"
 DENSITY_SUM = "density_sum"
 MARK = "mark"
 
-# calculate all string characters within a tag
+# calculate all characters within a tags text
 def token_count(tag) -> int:
     test_string = tag.string if tag.string else ''
     groups = re.findall(r'\w+', test_string)
@@ -25,8 +25,8 @@ def tag_count(tag) -> int:
 def get_density(tag) -> float:
     return float(token_count(tag)) / float(tag_count(tag))
 
-# search for tag that matches density value by attribute id
-def search_tag(tag: Tag, id: str, density: float) -> Tag:
+# find tag that matches density value by attribute id
+def find_tag(tag: Tag, id: str, density: float) -> Tag:
     id = str(id)
     density = str(density)
     try:
@@ -39,7 +39,7 @@ def search_tag(tag: Tag, id: str, density: float) -> Tag:
     if target is None:
         for sibling in tag.descendants:
             if isinstance(sibling, Tag):
-                target = search_tag(sibling, id, density)
+                target = find_tag(sibling, id, density)
                 break
     return target
 
@@ -65,7 +65,7 @@ def set_tag_density(soup):
 
 # get threshold to use as base line for which tags to keep
 def get_threshold(tag: Tag, max_density_sum: float) -> float:
-    target = search_tag(tag, DENSITY_SUM, max_density_sum)
+    target = find_tag(tag, DENSITY_SUM, max_density_sum)
     threshold = float(target[DENSITY])
     set_mark(target, 1) # keep tag
     parent = target.parent
@@ -94,9 +94,9 @@ def mark_tag_content(tag: Tag, threshold: float):
             for child in tag.children:
                 mark_tag_content(child, threshold)
 
-# find tag with the highest denisty sum and mark its children as for content to be kept
+# find tag with the highest denisty sum and mark its children as content to be kept
 def find_max_density_sum_tag(tag: Tag, max_density_sum: float):
-    target = search_tag(tag, DENSITY_SUM, max_density_sum)
+    target = find_tag(tag, DENSITY_SUM, max_density_sum)
     mark = int(tag[MARK])
     if mark != 1:
         set_mark(target, 1) # keep tag
@@ -111,23 +111,21 @@ def clean_up(soup) -> bs:
     [comment.extract() for comment in comments] #remove comments
     doctype = soup.findAll(text=lambda text:isinstance(text, Doctype))
     [doctype.extract() for doctype in doctype] #remove <!DOCTYPE html> 
-    # Remove tags that will not contain text content
-    for tags in soup.find_all(['script', 'style', 'input', 'nav', 'img', 'button', 'video', 'meta']):
+    # remove tags that will not contain text content
+    for tags in soup.find_all(['script', 'style', 'input', 'nav', 'img', 'button', 'video', 'meta', 'noindex']):
         tags.decompose() 
     return soup
 
 def get_plain_text(soup):
     for tag in soup.find_all():
         tag.unwrap()
-
     pretty = soup.prettify()
     remove_body = re.sub(r'<.*?>', '', pretty).strip()
-
     splits = [x.strip() for x in remove_body.split('\n')]
     return html.unescape('\n'.join(splits))
 
 def write_to_file(content, filename):
-    with open(os.path.join('./noise-html-output', filename), 'w', encoding='utf-8') as file:
+    with open(os.path.join('./repository', filename), 'w', encoding='utf-8') as file:
         file.write(content)
         file.close()
 
