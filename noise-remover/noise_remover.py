@@ -142,7 +142,7 @@ def clean_up(soup):
     
     return soup
 
-def compute_density(html_doc):
+def compute_density(html_doc, filename):
     soup = bs(html_doc, 'html.parser').body
     # Remove any comments in the html
     soup = clean_up(soup)
@@ -190,7 +190,7 @@ def extract_text(folder_name):
     for filename in os.listdir(folder_name):
         with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
             html_doc = f.read()
-            compute_density(html_doc)
+            compute_density(html_doc, filename)
         break
 
 """
