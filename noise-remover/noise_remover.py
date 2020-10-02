@@ -7,8 +7,12 @@ DENSITY_SUM_ID = "density_sum"
 MARK_ID = "mark"
 
 def token_count(tag):
-    test_string = tag.text
-    result = len(re.findall(r'\w+', test_string))
+    test_string = tag.string if tag.string else ''
+    groups = re.findall(r'\w+', test_string)
+
+    result = 0
+    for group in groups:
+        result += len(group)
     return result
 
 def tag_count(tag):
