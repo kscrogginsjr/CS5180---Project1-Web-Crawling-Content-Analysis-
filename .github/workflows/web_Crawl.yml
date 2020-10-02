@@ -49,5 +49,5 @@ jobs:
       working-directory: noise-remover/
       run: |
         python -m pip install --upgrade pip
-        pip install -r noise-remover/requirements.txt
-        python noise-remover/noise_remover.py
+        pip install -r requirements.txt
+        python noise_remover.py
