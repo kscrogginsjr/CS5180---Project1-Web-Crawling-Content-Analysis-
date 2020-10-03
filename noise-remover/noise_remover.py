@@ -156,7 +156,7 @@ def compute_density(html_doc, filename):
     [tag.decompose() for tag in mark_zero]
 
     # remove extra whitespace and duplicate newlines
-    output = get_plain_text(soup)
+    output = soup.prettify()#get_plain_text(soup)
 
     # write altered html files to noise-html-output folder
     write_to_file(output, filename)
@@ -167,6 +167,7 @@ def extract_text(folder_name):
         with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
             html_doc = f.read()
             compute_density(html_doc, filename)
+        break
 
 if __name__ == "__main__":
     folder_name = '../repository'
