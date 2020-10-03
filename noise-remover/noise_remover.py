@@ -156,7 +156,7 @@ def compute_density(html_doc, filename):
     [tag.decompose() for tag in mark_zero]
 
     # remove extra whitespace and duplicate newlines
-    output = soup.prettify()#get_plain_text(soup)
+    output = get_plain_text(soup)
 
     # write altered html files to noise-html-output folder
     write_to_file(output, filename)
