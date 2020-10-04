@@ -127,6 +127,8 @@ def get_plain_text(soup):
 def write_to_file(content, filename):
     if not os.path.exists('../repository-cleaned'):
         os.makedirs('../repository-cleaned')
+    name = os.path.splitext(filename)[0]
+    filename = name + ".txt"
     with open(os.path.join('../repository-cleaned', filename), 'w', encoding='utf-8') as file:
         file.write(content)
         file.close()
