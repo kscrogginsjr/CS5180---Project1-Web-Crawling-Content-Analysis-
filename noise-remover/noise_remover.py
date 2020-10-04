@@ -125,7 +125,9 @@ def get_plain_text(soup):
     return html.unescape('\n'.join(splits))
 
 def write_to_file(content, filename):
-    with open(os.path.join('./repository', filename), 'w', encoding='utf-8') as file:
+    if not os.path.exists('../repository-cleaned'):
+        os.makedirs('../repository-cleaned')
+    with open(os.path.join('../repository-cleaned', filename), 'w', encoding='utf-8') as file:
         file.write(content)
         file.close()
 
@@ -167,8 +169,7 @@ def extract_text(folder_name):
         with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
             html_doc = f.read()
             compute_density(html_doc, filename)
-        break
 
 if __name__ == "__main__":
-    folder_name = '../repository'
+    folder_name = '../repository/English'
     extract_text(folder_name)
