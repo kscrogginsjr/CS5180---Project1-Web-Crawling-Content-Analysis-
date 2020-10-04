@@ -121,7 +121,7 @@ public class Crawler{
 
 			String language = "English";
 
-			language = helper.getWebPageLanguage(utf_encoded_webPageContent.length() > 1000 ? utf_encoded_webPageContent.substring(0, 1000) : utf_encoded_webPageContent);
+			//language = helper.getWebPageLanguage(utf_encoded_webPageContent.length() > 1000 ? utf_encoded_webPageContent.substring(0, 1000) : utf_encoded_webPageContent);
 
 			File createDirectory = new File("repository/");
 			createDirectory.mkdir();
