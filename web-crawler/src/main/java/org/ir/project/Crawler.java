@@ -58,7 +58,11 @@ public class Crawler{
 		Crawler crawler = new Crawler();
 		String sourceURL = properties.getProperty("webCrawler.SEED_WEBSITE");
 		crawlLimit = Integer.parseInt(properties.getProperty("webCrawler.CRAWL_LIMIT"));
+		long startTime = System.currentTimeMillis();
 		crawler.processPage(sourceURL);
+		long endTime = System.currentTimeMillis();
+
+		System.out.println("Total Time to crawl 100 webPages - "+ (endTime - startTime) + " ms");
 		crawler.createReport();
 	}
 
