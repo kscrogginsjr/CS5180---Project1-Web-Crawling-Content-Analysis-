@@ -174,7 +174,7 @@ public class Helper {
         if(url == null || url.isEmpty()) return false;
 
         ArrayList<String> inValidPaths = new ArrayList<>();
-        inValidPaths.add("?");
+        //inValidPaths.add("?");
         inValidPaths.add("#");
         inValidPaths.add(".pdf");
         inValidPaths.add(".jpg");
