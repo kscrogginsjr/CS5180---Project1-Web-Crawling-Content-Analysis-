@@ -2,6 +2,7 @@ import os
 from bs4 import BeautifulSoup as bs, Comment, Doctype, Tag
 import re
 import html
+from threading import Thread
 
 DENSITY = "density"
 DENSITY_SUM = "density_sum"
@@ -66,6 +67,9 @@ def set_tag_density(soup):
 # get threshold to use as base line for which tags to keep
 def get_threshold(tag: Tag, max_density_sum: float) -> float:
     target = find_tag(tag, DENSITY_SUM, max_density_sum)
+    if target is None:
+        threshold = float(tag[DENSITY])
+        return threshold
     threshold = float(target[DENSITY])
     set_mark(target, 1) # keep tag
     parent = target.parent
@@ -133,8 +137,16 @@ def write_to_file(content, filename):
         file.write(content)
         file.close()
 
-def compute_density(html_doc, filename):
+def compute_density(folder_name, filename):
+    # read file in
+    html_doc = read_file(folder_name, filename)
+
+    # initialize beautifulsoup object
     soup = bs(html_doc, 'html.parser').body
+
+    # if beautifulsoup was unable to parse html_doc return
+    if not soup:
+        return
 
     # remove unwanted tags, comments and DOCTYPE in html doc
     soup = clean_up(soup)
@@ -165,12 +177,23 @@ def compute_density(html_doc, filename):
     # write altered html files to noise-html-output folder
     write_to_file(output, filename)
 
+def read_file(folder_name, filename):
+    with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
+        html_doc = f.read()
+    
+    return html_doc
+
 # parse all html files from folder and extract text
 def extract_text(folder_name):
+    threads = []
     for filename in os.listdir(folder_name):
-        with open(os.path.join(folder_name, filename), 'r', encoding='utf8') as f:
-            html_doc = f.read()
-            compute_density(html_doc, filename)
+        t = Thread(target=compute_density, args=(folder_name, filename))
+        t.start()
+        threads.append(t)
+    
+    for t in threads:
+        t.join()
+
 
 if __name__ == "__main__":
     folder_name = '../repository/English'
